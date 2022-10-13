@@ -4,7 +4,7 @@ import com.badsha.currencyconversion.domain.model.Currency
 import com.badsha.currencyconversion.domain.repository.CurrencyRepository
 import kotlinx.coroutines.flow.Flow
 
-class GetCurrencyUseCase(
+class GetAvailableCurrencyUseCase(
     private val repository: CurrencyRepository
 ) {
     suspend operator fun invoke(

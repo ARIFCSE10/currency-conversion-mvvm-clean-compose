@@ -10,7 +10,7 @@ interface CurrencyDao {
     fun getCurrencies(): Flow<List<Currency>>
 
     @Query("SELECT * from currency WHERE name = :name")
-    suspend fun getCurrency(name: String): Flow<Currency?>
+    fun getCurrency(name: String): Flow<Currency?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCurrency(currency: Currency)

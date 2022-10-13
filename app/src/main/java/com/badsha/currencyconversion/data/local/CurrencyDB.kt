@@ -9,7 +9,12 @@ import com.badsha.currencyconversion.domain.model.Currency
 @Database(
     entities = [Currency::class],
     version = 1,
+    exportSchema = false,
 )
 abstract class CurrencyDB : RoomDatabase() {
     abstract val currencyDao: CurrencyDao
+
+    companion object {
+        const val DATABASE_NAME = "currency_db"
+    }
 }

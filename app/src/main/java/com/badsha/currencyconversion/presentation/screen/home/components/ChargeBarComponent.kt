@@ -1,28 +1,30 @@
 package com.badsha.currencyconversion.presentation.screen.home.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.badsha.currencyconversion.domain.model.Currency
 
 
 @Composable
-fun ChargeBarComponent() {
-    var showMenu by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
+fun ChargeBarComponent(chargeAmount: Double, sellingCurrency: Currency) {
+    Log.i("TAG", chargeAmount.toString())
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -38,42 +40,24 @@ fun ChargeBarComponent() {
             style = MaterialTheme.typography.body2,
             textAlign = TextAlign.Center,
         )
-        TextField(
-            value = text,
-            onValueChange = { text = it },
-            maxLines = 1,
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
-            singleLine = true,
-            enabled = false,
-            placeholder = {
-                Text(
-                    text = "100", textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth()
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
-                autoCorrect = false,
-            ),
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.DarkGray,
-                disabledTextColor = Color.Transparent,
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = Color.DarkGray,
-                unfocusedIndicatorColor = Color.LightGray,
-                disabledIndicatorColor = Color.Transparent
-            ),
+        Text(
+            String.format("%.2f", chargeAmount),
+            style = MaterialTheme.typography.body2,
+            textAlign = TextAlign.End,
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp)
                 .padding(horizontal = 16.dp)
         )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                "EUR", style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.Bold
+                sellingCurrency.name,
+                style = MaterialTheme.typography.subtitle1,
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(16.dp))
             Card(
@@ -85,7 +69,7 @@ fun ChargeBarComponent() {
                 Icon(
                     imageVector = Icons.Default.Info,
                     tint = Color.White,
-                    contentDescription = "You take",
+                    contentDescription = "Charge",
                 )
             }
         }

@@ -8,9 +8,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.badsha.currencyconversion.presentation.screen.home.HomeViewModel
 
 @Composable
-fun ConvertCurrencyComponent() {
+fun ConvertCurrencyComponent(
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+    val selling = viewModel.sellingCurrency
+    val sellable = viewModel.sellableCurrencies
+    val sellAmount = viewModel.sellAmount
+
+    val buying = viewModel.buyingCurrency
+    val buyable = viewModel.buyableCurrencies
+    val buyAmount = viewModel.buyAmount
+
+    val chargeAmount = viewModel.chargeAmount
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -24,10 +38,36 @@ fun ConvertCurrencyComponent() {
             textAlign = TextAlign.Start,
         )
         Spacer(modifier = Modifier.height(16.dp))
-        SellBarComponent()
+        SellBarComponent(
+            sellingCurrency = selling.value,
+            sellableCurrencies = sellable.value,
+            sellAmount = sellAmount.value,
+            onCurrencyChange = {
+                selling.value = it
+                viewModel.chargeRate = it.charge
+            },
+            onAmountChange = {
+                viewModel.onSellAmountChange(it)
+            },
+            onTextFieldClick = { viewModel.resetInput() }
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        BuyBarComponent()
+        BuyBarComponent(buyingCurrency = buying.value,
+            buyableCurrencies = buyable.value,
+            buyAmount = buyAmount.value,
+            onCurrencyChange = {
+                buying.value = it
+                viewModel.conversionRate = it.rate
+            },
+            onAmountChange = {
+                viewModel.onBuyAmountChange(it)
+            },
+            onTextFieldClick = { viewModel.resetInput() }
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        ChargeBarComponent()
+        ChargeBarComponent(
+            chargeAmount = chargeAmount.value,
+            sellingCurrency = selling.value,
+        )
     }
 }

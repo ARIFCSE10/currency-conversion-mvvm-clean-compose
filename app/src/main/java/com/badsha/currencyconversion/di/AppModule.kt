@@ -10,6 +10,7 @@ import com.badsha.currencyconversion.data.repository.RateRepositoryImpl
 import com.badsha.currencyconversion.domain.repository.CurrencyRepository
 import com.badsha.currencyconversion.domain.repository.RateRepository
 import com.badsha.currencyconversion.domain.use_case.CurrencyUseCases
+import com.badsha.currencyconversion.domain.use_case.calculation.ChargeFreeOnTwoHundredSell
 import com.badsha.currencyconversion.domain.use_case.get_available_currency.GetAvailableCurrenciesUseCase
 import com.badsha.currencyconversion.domain.use_case.get_available_currency.GetAvailableCurrencyUseCase
 import com.badsha.currencyconversion.domain.use_case.modify_available_currency.InsertNewCurrencyUseCase
@@ -36,12 +37,8 @@ object AppModule {
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 
-        return Retrofit.Builder()
-            .baseUrl(Constants.BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(API::class.java)
+        return Retrofit.Builder().baseUrl(Constants.BASE_URL).client(client)
+            .addConverterFactory(GsonConverterFactory.create()).build().create(API::class.java)
     }
 
     @Provides
@@ -71,6 +68,12 @@ object AppModule {
             insertNewCurrencyUseCase = InsertNewCurrencyUseCase(currencyRepository),
             updateAvailableCurrencyUseCase = UpdateAvailableCurrencyUseCase(currencyRepository)
         )
+    }
+
+    @Provides
+    @Singleton
+    fun providesChargeCalculationUseCases(): ChargeFreeOnTwoHundredSell {
+        return ChargeFreeOnTwoHundredSell()
     }
 
 

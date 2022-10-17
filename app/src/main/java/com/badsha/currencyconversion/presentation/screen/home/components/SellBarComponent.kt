@@ -2,6 +2,8 @@ package com.badsha.currencyconversion.presentation.screen.home.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,13 +22,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.badsha.currencyconversion.domain.model.Currency
 
 
 @Composable
-fun SellBarComponent() {
-    var showMenu by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
+fun SellBarComponent(
+    sellingCurrency: Currency,
+    sellAmount: Double?,
+    sellableCurrencies: List<Currency>,
+    onAmountChange: (String) -> Unit,
+    onCurrencyChange: (Currency) -> Unit,
+    onTextFieldClick: () -> Unit,
+) {
+    var showCurrencyChangeMenu by remember { mutableStateOf(false) }
     val focus = LocalTextInputService.current
+    val amount: String = if (sellAmount == null) "" else String.format("%.2f", sellAmount)
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
+    if (isPressed) {
+        onTextFieldClick()
+    }
 
     Row(
         modifier = Modifier
@@ -44,23 +60,26 @@ fun SellBarComponent() {
             textAlign = TextAlign.Center,
         )
         TextField(
-            value = text,
-            onValueChange = { text = it },
+            value = amount,
+            onValueChange = { amount ->
+                focus?.let {
+                    onAmountChange.invoke(amount)
+                }
+            },
             maxLines = 1,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
             singleLine = true,
             keyboardActions = KeyboardActions(onDone = { focus?.hideSoftwareKeyboard() }),
             placeholder = {
                 Text(
-                    text = "100",
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
+                    text = "100", textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth()
                 )
             },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
                 autoCorrect = false,
             ),
+            interactionSource = interactionSource,
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.DarkGray,
                 disabledTextColor = Color.Transparent,
@@ -78,12 +97,13 @@ fun SellBarComponent() {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .clickable {
-                    showMenu = !showMenu
+                    showCurrencyChangeMenu = !showCurrencyChangeMenu
                 }
-                .padding(16.dp)
-        ) {
+                .padding(16.dp)) {
             Text(
-                "EUR", style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.Bold
+                sellingCurrency.name,
+                style = MaterialTheme.typography.subtitle1,
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(16.dp))
             Box {
@@ -96,26 +116,24 @@ fun SellBarComponent() {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
                         tint = Color.White,
-                        contentDescription = "You take",
+                        contentDescription = "You give",
                     )
                 }
                 DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false },
+                    expanded = showCurrencyChangeMenu,
+                    onDismissRequest = { showCurrencyChangeMenu = false },
                 ) {
-                    DropdownMenuItem(onClick = { showMenu = false }) {
-                        Text(
-                            text = "EUR",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    DropdownMenuItem(onClick = { showMenu = false }) {
-                        Text(
-                            text = "USD",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    sellableCurrencies.forEach {
+                        DropdownMenuItem(onClick = {
+                            showCurrencyChangeMenu = false
+                            onCurrencyChange.invoke(it)
+                        }) {
+                            Text(
+                                text = it.name,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }

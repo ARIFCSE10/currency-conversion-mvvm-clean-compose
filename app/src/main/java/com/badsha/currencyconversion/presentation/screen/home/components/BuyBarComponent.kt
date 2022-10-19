@@ -36,7 +36,6 @@ fun BuyBarComponent(
 ) {
     var showCurrencyChangeMenu by remember { mutableStateOf(false) }
     val focus = LocalTextInputService.current
-    val amount: String = if (buyAmount == null) "" else String.format("%.2f", buyAmount)
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed: Boolean by interactionSource.collectIsPressedAsState()
@@ -59,8 +58,7 @@ fun BuyBarComponent(
             style = MaterialTheme.typography.body2,
             textAlign = TextAlign.Center,
         )
-        TextField(
-            value = amount,
+        TextField(value = buyAmount?.toString() ?: "",
             onValueChange = { amount ->
                 focus?.let {
                     onAmountChange.invoke(amount)
@@ -94,8 +92,7 @@ fun BuyBarComponent(
                 .padding(horizontal = 16.dp)
                 .clickable {
                     onTextFieldClick.invoke()
-                }
-        )
+                })
         Row(verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier

@@ -41,7 +41,7 @@ fun ChargeBarComponent(chargeAmount: Double, sellingCurrency: Currency) {
             textAlign = TextAlign.Center,
         )
         Text(
-            String.format("%.2f", chargeAmount),
+            chargeAmount.toString(),
             style = MaterialTheme.typography.body2,
             textAlign = TextAlign.End,
             modifier = Modifier

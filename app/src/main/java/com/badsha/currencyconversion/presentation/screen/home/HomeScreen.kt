@@ -67,7 +67,9 @@ fun HomeScreen(
                         }
                     }
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            viewModel.onConvert()
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)

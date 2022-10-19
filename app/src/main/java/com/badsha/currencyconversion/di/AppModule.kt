@@ -9,7 +9,9 @@ import com.badsha.currencyconversion.data.repository.CurrencyRepositoryImpl
 import com.badsha.currencyconversion.data.repository.RateRepositoryImpl
 import com.badsha.currencyconversion.domain.repository.CurrencyRepository
 import com.badsha.currencyconversion.domain.repository.RateRepository
+import com.badsha.currencyconversion.domain.use_case.ChargeCalculationUseCases
 import com.badsha.currencyconversion.domain.use_case.CurrencyUseCases
+import com.badsha.currencyconversion.domain.use_case.calculation.ChargeFreeForFirstFive
 import com.badsha.currencyconversion.domain.use_case.calculation.ChargeFreeOnTwoHundredSell
 import com.badsha.currencyconversion.domain.use_case.get_available_currency.GetAvailableCurrenciesUseCase
 import com.badsha.currencyconversion.domain.use_case.get_available_currency.GetAvailableCurrencyUseCase
@@ -72,8 +74,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesChargeCalculationUseCases(): ChargeFreeOnTwoHundredSell {
-        return ChargeFreeOnTwoHundredSell()
+    fun providesChargeCalculationUseCases(): ChargeCalculationUseCases {
+        return ChargeCalculationUseCases(
+            chargeFreeForFirstFive = ChargeFreeForFirstFive(),
+            chargeFreeOnTwoHundredSell = ChargeFreeOnTwoHundredSell()
+        )
     }
 
 

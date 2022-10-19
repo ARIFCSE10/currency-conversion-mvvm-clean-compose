@@ -7,9 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.badsha.currencyconversion.common.Constants
 import com.badsha.currencyconversion.common.Resource
+import com.badsha.currencyconversion.domain.extension.roundTwoDeciaml
 import com.badsha.currencyconversion.domain.model.Currency
+import com.badsha.currencyconversion.domain.use_case.ChargeCalculationUseCases
 import com.badsha.currencyconversion.domain.use_case.CurrencyUseCases
-import com.badsha.currencyconversion.domain.use_case.calculation.ChargeFreeOnTwoHundredSell
 import com.badsha.currencyconversion.domain.use_case.get_rate.GetRateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -21,7 +22,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getRateUseCase: GetRateUseCase,
     private val currencyUseCases: CurrencyUseCases,
-    private val chargeFreeOnTwoHundredSell: ChargeFreeOnTwoHundredSell,
+    private val chargeCalculationUseCases: ChargeCalculationUseCases,
 ) : ViewModel() {
     private val _state = mutableStateOf(HomeState())
     val state: State<HomeState> = _state
@@ -57,14 +58,14 @@ class HomeViewModel @Inject constructor(
 
     fun onSellAmountChange(amount: String) {
         try {
-            val validatedAmount = amount.replace("..", ".").toDouble()
+            val validatedAmount = amount.replace("..", ".").toDouble().roundTwoDeciaml()
             if (validatedAmount == 0.0) {
                 resetInput()
             } else {
                 sellAmount.value = validatedAmount
                 sellAmount.value?.let {
-                    buyAmount.value = it * conversionRate
-                    chargeAmount.value = calculateCharge(it)
+                    buyAmount.value = (it * conversionRate).roundTwoDeciaml()
+                    chargeAmount.value = calculateCharge()
                 }
             }
         } catch (e: Exception) {
@@ -72,9 +73,18 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun calculateCharge(sellAmount: Double): Double {
-        val charge = (sellAmount * chargeRate / 100)
-        return chargeFreeOnTwoHundredSell.invoke(charge, sellAmount)
+    private fun calculateCharge(): Double {
+        var baseCharge = ((sellAmount.value ?: 0.0) * chargeRate / 100).roundTwoDeciaml()
+        baseCharge = chargeCalculationUseCases.chargeFreeOnTwoHundredSell.invoke(
+            baseCharge, sellAmount.value?.roundTwoDeciaml() ?: 0.0
+        )
+
+        availableCurrencies.value.firstOrNull {
+            it.name == sellingCurrency.value.name
+        }?.let {
+            baseCharge = chargeCalculationUseCases.chargeFreeForFirstFive.invoke(baseCharge, it)
+        }
+        return baseCharge.roundTwoDeciaml()
     }
 
     fun resetInput() {
@@ -85,20 +95,59 @@ class HomeViewModel @Inject constructor(
 
     fun onBuyAmountChange(amount: String) {
         try {
-            val validatedAmount = amount.replace("..", ".").toDouble()
+            val validatedAmount = amount.replace("..", ".").toDouble().roundTwoDeciaml()
             if (validatedAmount == 0.0) {
                 resetInput()
             } else {
                 buyAmount.value = validatedAmount
-                buyAmount.value?.let {
-                    sellAmount.value = (it / conversionRate)
-                    chargeAmount.value = ((sellAmount.value ?: 0.0) * chargeRate / 100)
+                buyAmount.value?.let { buyValue ->
+                    sellAmount.value = (buyValue / conversionRate).roundTwoDeciaml()
+                    sellAmount.value?.let {
+                        chargeAmount.value = calculateCharge()
+                    }
                 }
             }
         } catch (e: Exception) {
             resetInput()
         }
 
+    }
+
+    fun onConvert() {
+        // Save Current State
+        val availableCurrencyListBackup = availableCurrencies.value.toMutableList()
+        // Modify this list
+        val availableCurrencyList = availableCurrencies.value.toMutableList()
+        //Validation Check
+        try {
+            //Selling Conversion
+            availableCurrencies.value.firstOrNull {
+                it.name == sellingCurrency.value.name
+            }?.let {
+                val totalNeeded = (sellAmount.value ?: 0.0) + chargeAmount.value
+                if (it.available < totalNeeded) return
+                val available = it.available - totalNeeded
+                val sellingCurrency = it.copy(available = available)
+                availableCurrencyList.remove(it)
+                availableCurrencyList.add(sellingCurrency)
+            }
+
+            //Buying Conversion
+            availableCurrencies.value.firstOrNull {
+                it.name == buyingCurrency.value.name
+            }?.let {
+                val available = it.available + (buyAmount.value ?: 0.0)
+                val buyingCurrency = it.copy(available = available)
+                availableCurrencyList.remove(it)
+                availableCurrencyList.add(buyingCurrency)
+            }
+
+            // Apply chnages
+            availableCurrencies.value = availableCurrencyList
+            resetInput()
+        } catch (e: Exception) {
+            availableCurrencies.value = availableCurrencyListBackup
+        }
     }
 
 

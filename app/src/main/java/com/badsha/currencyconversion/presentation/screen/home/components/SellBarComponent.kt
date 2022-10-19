@@ -36,7 +36,6 @@ fun SellBarComponent(
 ) {
     var showCurrencyChangeMenu by remember { mutableStateOf(false) }
     val focus = LocalTextInputService.current
-    val amount: String = if (sellAmount == null) "" else String.format("%.2f", sellAmount)
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed: Boolean by interactionSource.collectIsPressedAsState()
@@ -60,7 +59,7 @@ fun SellBarComponent(
             textAlign = TextAlign.Center,
         )
         TextField(
-            value = amount,
+            value = sellAmount?.toString() ?: "",
             onValueChange = { amount ->
                 focus?.let {
                     onAmountChange.invoke(amount)

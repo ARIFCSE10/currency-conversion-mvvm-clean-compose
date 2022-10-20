@@ -56,6 +56,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    val getConversionSuccessContent: String
+        get() {
+            return "You have converted ${sellAmount.value} ${sellingCurrency.value.name}" +
+                    " to ${buyAmount.value} ${buyingCurrency.value.name}" +
+                    " with charge ${chargeAmount.value} ${sellingCurrency.value.name}"
+        }
+
     fun onSellAmountChange(amount: String) {
         try {
             val validatedAmount = amount.replace("..", ".").toDouble().roundTwoDeciaml()
@@ -72,6 +79,15 @@ class HomeViewModel @Inject constructor(
             resetInput()
         }
     }
+
+    fun showAlertDialog() {
+        _state.value = HomeState(isLoading = false, error = false, showAlertDialog = true)
+    }
+
+    fun hideAlertDialog() {
+        _state.value = HomeState(isLoading = false, error = false, showAlertDialog = false)
+    }
+
 
     private fun calculateCharge(): Double {
         var baseCharge = ((sellAmount.value ?: 0.0) * chargeRate / 100).roundTwoDeciaml()
@@ -125,7 +141,7 @@ class HomeViewModel @Inject constructor(
                 it.name == sellingCurrency.value.name
             }?.let {
                 val totalNeeded = (sellAmount.value ?: 0.0) + chargeAmount.value
-                if (it.available < totalNeeded) return
+                if (it.available < totalNeeded || totalNeeded <= 0) return
                 val available = it.available - totalNeeded
                 val sellingCurrency = it.copy(available = available)
                 availableCurrencyList.remove(it)
@@ -144,7 +160,7 @@ class HomeViewModel @Inject constructor(
 
             // Apply chnages
             availableCurrencies.value = availableCurrencyList
-            resetInput()
+            showAlertDialog()
         } catch (e: Exception) {
             availableCurrencies.value = availableCurrencyListBackup
         }

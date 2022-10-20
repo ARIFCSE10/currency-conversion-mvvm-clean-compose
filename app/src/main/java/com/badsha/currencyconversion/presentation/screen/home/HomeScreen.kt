@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.badsha.currencyconversion.presentation.screen.home.components.AvailableCurrencyListComponent
+import com.badsha.currencyconversion.presentation.screen.home.components.ConversionSuccessDialog
 import com.badsha.currencyconversion.presentation.screen.home.components.ConvertCurrencyComponent
 
 
@@ -78,6 +79,18 @@ fun HomeScreen(
                     ) {
                         Text(text = "Convert", style = MaterialTheme.typography.button)
                     }
+                    if (viewModel.state.value.showAlertDialog)
+                        ConversionSuccessDialog(onDismiss = {
+                            viewModel.hideAlertDialog()
+                            viewModel.resetInput()
+                        },
+                            title = { Text(text = "Conversion Successful") },
+                            content = {
+                                Text(
+                                    text = viewModel.getConversionSuccessContent
+                                )
+                            }
+                        )
                 }
             }
         }

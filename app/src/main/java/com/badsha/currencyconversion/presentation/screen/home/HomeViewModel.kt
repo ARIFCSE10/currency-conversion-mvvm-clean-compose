@@ -30,12 +30,12 @@ class HomeViewModel @Inject constructor(
     val currencyRates: MutableState<List<Currency>> = mutableStateOf(emptyList())
     val availableCurrencies: MutableState<List<Currency>> = mutableStateOf(emptyList())
 
-    lateinit var sellingCurrency: MutableState<Currency>
-    lateinit var sellableCurrencies: MutableState<List<Currency>>
+    var sellingCurrency: MutableState<Currency?> = mutableStateOf(null)
+    var sellableCurrencies: MutableState<List<Currency>> = mutableStateOf(emptyList())
     val sellAmount: MutableState<Double?> = mutableStateOf(null)
 
-    lateinit var buyingCurrency: MutableState<Currency>
-    lateinit var buyableCurrencies: MutableState<List<Currency>>
+    var buyingCurrency: MutableState<Currency?> = mutableStateOf(null)
+    var buyableCurrencies: MutableState<List<Currency>> = mutableStateOf(emptyList())
     val buyAmount: MutableState<Double?> = mutableStateOf(null)
 
     val chargeAmount: MutableState<Double> = mutableStateOf(0.0)
@@ -44,23 +44,15 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getRate()
+            preloadBaseCurrency()
             getAvailableCurrencies()
-            sellingCurrency = mutableStateOf(availableCurrencies.value.first())
-            sellableCurrencies = mutableStateOf(availableCurrencies.value)
-            chargeRate = sellingCurrency.value.charge
-
-            buyingCurrency = mutableStateOf(availableCurrencies.value.last())
-            buyableCurrencies = mutableStateOf(availableCurrencies.value)
-            conversionRate = buyingCurrency.value.rate
+            getRate()
         }
     }
 
     val getConversionSuccessContent: String
         get() {
-            return "You have converted ${sellAmount.value} ${sellingCurrency.value.name}" +
-                    " to ${buyAmount.value} ${buyingCurrency.value.name}" +
-                    " with charge ${chargeAmount.value} ${sellingCurrency.value.name}"
+            return "You have converted ${sellAmount.value} ${sellingCurrency.value?.name}" + " to ${buyAmount.value} ${buyingCurrency.value?.name}" + " with charge ${chargeAmount.value} ${sellingCurrency.value?.name}"
         }
 
     fun onSellAmountChange(amount: String) {
@@ -80,12 +72,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun showAlertDialog() {
-        _state.value = HomeState(isLoading = false, error = false, showAlertDialog = true)
+    private fun showSuccessDialog() {
+        _state.value = HomeState(isLoading = false, error = false, showSuccessDialog = true)
     }
 
-    fun hideAlertDialog() {
-        _state.value = HomeState(isLoading = false, error = false, showAlertDialog = false)
+    fun hideSuccessDialog() {
+        _state.value = HomeState(isLoading = false, error = false, showSuccessDialog = false)
     }
 
 
@@ -96,7 +88,7 @@ class HomeViewModel @Inject constructor(
         )
 
         availableCurrencies.value.firstOrNull {
-            it.name == sellingCurrency.value.name
+            it.name == sellingCurrency.value?.name
         }?.let {
             baseCharge = chargeCalculationUseCases.chargeFreeForFirstFive.invoke(baseCharge, it)
         }
@@ -138,7 +130,7 @@ class HomeViewModel @Inject constructor(
         try {
             //Selling Conversion
             availableCurrencies.value.firstOrNull {
-                it.name == sellingCurrency.value.name
+                it.name == sellingCurrency.value?.name
             }?.let {
                 val totalNeeded = (sellAmount.value ?: 0.0) + chargeAmount.value
                 if (it.available < totalNeeded || totalNeeded <= 0) return
@@ -150,7 +142,7 @@ class HomeViewModel @Inject constructor(
 
             //Buying Conversion
             availableCurrencies.value.firstOrNull {
-                it.name == buyingCurrency.value.name
+                it.name == buyingCurrency.value?.name
             }?.let {
                 val available = it.available + (buyAmount.value ?: 0.0)
                 val buyingCurrency = it.copy(available = available)
@@ -158,20 +150,40 @@ class HomeViewModel @Inject constructor(
                 availableCurrencyList.add(buyingCurrency)
             }
 
-            // Apply chnages
+            // Apply changes
             availableCurrencies.value = availableCurrencyList
-            showAlertDialog()
+            showSuccessDialog()
         } catch (e: Exception) {
             availableCurrencies.value = availableCurrencyListBackup
         }
     }
 
+    private suspend fun preloadBaseCurrency() {
+        currencyUseCases.getAvailableCurrencyUseCase.invoke(Constants.BASE_CURRENCY).onEach {
+            if (it == null) {
+                currencyUseCases.insertNewCurrencyUseCase.invoke(currency = Currency.baseCurrencyPreloaded)
+            }
+        }.launchIn(viewModelScope)
+    }
 
-    private fun getAvailableCurrencies() {
-        availableCurrencies.value = listOf<Currency>(
-            Currency(Constants.BASE_CURRENCY, 1.0, 1000.0),
-            Currency("USD", 1.1),
-        )
+    private suspend fun getAvailableCurrencies() {
+
+        currencyUseCases.getAvailableCurrenciesUseCase().onEach {
+            availableCurrencies.value = it
+            if (it.isNotEmpty()) {
+                sellingCurrency.value = it.first()
+                sellableCurrencies.value = it
+                chargeRate = it.first().charge
+
+                buyingCurrency.value = availableCurrencies.value.last()
+                buyableCurrencies.value = availableCurrencies.value
+                conversionRate = buyingCurrency.value!!.rate
+            }
+        }.launchIn(viewModelScope)
+//        availableCurrencies.value = listOf<Currency>(
+//            Currency(Constants.BASE_CURRENCY, 1.0, 1000.0),
+//            Currency("USD", 1.1),
+//        )
     }
 
     private fun getRate() {

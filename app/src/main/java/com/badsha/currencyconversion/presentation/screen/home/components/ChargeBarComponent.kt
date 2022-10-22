@@ -23,7 +23,7 @@ import com.badsha.currencyconversion.domain.model.Currency
 
 
 @Composable
-fun ChargeBarComponent(chargeAmount: Double, sellingCurrency: Currency) {
+fun ChargeBarComponent(chargeAmount: Double, sellingCurrency: Currency?) {
     Log.i("TAG", chargeAmount.toString())
     Row(
         modifier = Modifier
@@ -55,7 +55,7 @@ fun ChargeBarComponent(chargeAmount: Double, sellingCurrency: Currency) {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                sellingCurrency.name,
+                sellingCurrency?.name ?: "--",
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold
             )

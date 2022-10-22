@@ -27,7 +27,7 @@ import com.badsha.currencyconversion.domain.model.Currency
 
 @Composable
 fun BuyBarComponent(
-    buyingCurrency: Currency,
+    buyingCurrency: Currency?,
     buyableCurrencies: List<Currency>,
     buyAmount: Double?,
     onAmountChange: (String) -> Unit,
@@ -103,7 +103,7 @@ fun BuyBarComponent(
 
         ) {
             Text(
-                buyingCurrency.name,
+                buyingCurrency?.name ?: "--",
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold
             )

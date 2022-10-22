@@ -59,6 +59,15 @@ fun HomeScreen(
                         style = MaterialTheme.typography.h5
                     )
                 }
+            } else if (state.showSuccessDialog) {
+                ConversionSuccessDialog(onDismiss = {
+                    viewModel.hideSuccessDialog()
+                    viewModel.resetInput()
+                }, title = { Text(text = "Conversion Successful") }, content = {
+                    Text(
+                        text = viewModel.getConversionSuccessContent
+                    )
+                })
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.weight(1f)) {
@@ -79,18 +88,6 @@ fun HomeScreen(
                     ) {
                         Text(text = "Convert", style = MaterialTheme.typography.button)
                     }
-                    if (viewModel.state.value.showAlertDialog)
-                        ConversionSuccessDialog(onDismiss = {
-                            viewModel.hideAlertDialog()
-                            viewModel.resetInput()
-                        },
-                            title = { Text(text = "Conversion Successful") },
-                            content = {
-                                Text(
-                                    text = viewModel.getConversionSuccessContent
-                                )
-                            }
-                        )
                 }
             }
         }

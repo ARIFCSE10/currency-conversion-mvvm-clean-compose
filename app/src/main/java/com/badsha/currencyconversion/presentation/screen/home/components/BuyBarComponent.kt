@@ -22,16 +22,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.badsha.currencyconversion.domain.model.Currency
+import com.badsha.currencyconversion.domain.model.Rate
 
 
 @Composable
 fun BuyBarComponent(
-    buyingCurrency: Currency?,
-    buyableCurrencies: List<Currency>,
+    buyingCurrencyRate: Rate?,
+    buyableCurrencyRates: List<Rate>,
     buyAmount: Double?,
     onAmountChange: (String) -> Unit,
-    onCurrencyChange: (Currency) -> Unit,
+    onSelectedCurrencyChange: (Rate) -> Unit,
     onTextFieldClick: () -> Unit,
 ) {
     var showCurrencyChangeMenu by remember { mutableStateOf(false) }
@@ -103,7 +103,7 @@ fun BuyBarComponent(
 
         ) {
             Text(
-                buyingCurrency?.name ?: "--",
+                buyingCurrencyRate?.currencyName ?: "--",
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold
             )
@@ -125,13 +125,13 @@ fun BuyBarComponent(
                     expanded = showCurrencyChangeMenu,
                     onDismissRequest = { showCurrencyChangeMenu = false },
                 ) {
-                    buyableCurrencies.forEach {
+                    buyableCurrencyRates.forEach {
                         DropdownMenuItem(onClick = {
                             showCurrencyChangeMenu = false
-                            onCurrencyChange.invoke(it)
+                            onSelectedCurrencyChange.invoke(it)
                         }) {
                             Text(
-                                text = it.name,
+                                text = it.currencyName,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
                             )

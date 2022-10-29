@@ -5,11 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -25,7 +24,7 @@ fun HomeScreen(
 ) {
     val state = viewModel.state.value
 
-    Scaffold(topBar = { topBar() }) { padding ->
+    Scaffold(topBar = { TopBar() }) { padding ->
 
         Box(
             modifier = Modifier
@@ -59,15 +58,6 @@ fun HomeScreen(
                         style = MaterialTheme.typography.h5
                     )
                 }
-            } else if (state.showSuccessDialog) {
-                ConversionSuccessDialog(onDismiss = {
-                    viewModel.hideSuccessDialog()
-                    viewModel.resetInput()
-                }, title = { Text(text = "Conversion Successful") }, content = {
-                    Text(
-                        text = viewModel.getConversionSuccessContent
-                    )
-                })
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(Modifier.weight(1f)) {
@@ -89,6 +79,17 @@ fun HomeScreen(
                         Text(text = "Convert", style = MaterialTheme.typography.button)
                     }
                 }
+
+                if (viewModel.dialogState.value.isVisible) {
+                    ConversionSuccessDialog(onDismiss = {
+                        viewModel.hideSuccessDialog()
+                        viewModel.resetInput()
+                    }, title = { Text(text = viewModel.dialogState.value.title) }, content = {
+                        Text(
+                            text = viewModel.dialogState.value.message
+                        )
+                    })
+                }
             }
         }
     }
@@ -96,7 +97,7 @@ fun HomeScreen(
 
 
 @Composable
-fun topBar() {
+fun TopBar() {
     TopAppBar(elevation = 8.dp) {
         Text(
             "Currency Converter",
@@ -104,15 +105,5 @@ fun topBar() {
             style = MaterialTheme.typography.h6,
             modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun ComposablePreview() {
-    var text by remember { mutableStateOf("") }
-    Surface(modifier = Modifier.fillMaxSize()) {
-
     }
 }

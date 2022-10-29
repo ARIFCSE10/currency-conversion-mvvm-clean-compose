@@ -1,6 +1,6 @@
 package com.badsha.currencyconversion.data.remote.dto
 
-import com.badsha.currencyconversion.domain.model.Currency
+import com.badsha.currencyconversion.domain.model.Rate
 import com.google.gson.annotations.SerializedName
 
 
@@ -17,8 +17,8 @@ data class RateDto(
     val timestamp: Int?
 )
 
-fun RateDto.toCurrencies(): List<Currency> {
+fun RateDto.toRates(): List<Rate> {
     return rates.map {
-        Currency(name = it.key, rate = it.value)
+        Rate(it.key, it.value)
     }
 }

@@ -45,6 +45,7 @@ fun ConvertCurrencyComponent(
             onCurrencyChange = {
                 selling.value = it
                 viewModel.chargeRate = it.charge
+                viewModel.loadOrFetchCurrencyRates(it.name)
             },
             onAmountChange = {
                 viewModel.onSellAmountChange(it)
@@ -52,12 +53,14 @@ fun ConvertCurrencyComponent(
             onTextFieldClick = { viewModel.resetInput() }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        BuyBarComponent(buyingCurrency = buying.value,
-            buyableCurrencies = buyable.value,
+        BuyBarComponent(
+            buyingCurrencyRate = buying.value,
+            buyableCurrencyRates = buyable.value,
             buyAmount = buyAmount.value,
-            onCurrencyChange = {
+            onSelectedCurrencyChange = {
                 buying.value = it
-                viewModel.conversionRate = it.rate
+                viewModel.conversionRate = it.currencyRate
+                viewModel.resetInput()
             },
             onAmountChange = {
                 viewModel.onBuyAmountChange(it)

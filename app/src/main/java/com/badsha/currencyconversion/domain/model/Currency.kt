@@ -8,11 +8,11 @@ import com.badsha.currencyconversion.common.Constants
 @Entity
 data class Currency(
     @PrimaryKey val name: String,
-    val rate: Double,
-    val available: Double = 0.0,
-    val charge: Double = 0.7,
-    val totalAmountConverted: Double = 0.0,
-    val totalTimesConverted: Int = 0,
+    var rate: Double,
+    var available: Double = 0.0,
+    var charge: Double = 0.7,
+    var totalAmountConverted: Double = 0.0,
+    var totalTimesConverted: Int = 0,
 ) {
     companion object {
         val baseCurrencyPreloaded =

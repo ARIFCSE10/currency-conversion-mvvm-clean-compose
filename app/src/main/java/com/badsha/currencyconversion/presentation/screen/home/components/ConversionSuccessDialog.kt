@@ -1,10 +1,9 @@
 package com.badsha.currencyconversion.presentation.screen.home.components
 
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun ConversionSuccessDialog(
@@ -20,22 +19,4 @@ fun ConversionSuccessDialog(
         },
         text = content,
     )
-}
-
-@Composable
-fun SnackbarDemo() {
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
-
-    Scaffold(scaffoldState = scaffoldState) { padding ->
-        Button(onClick = {
-            coroutineScope.launch {
-                scaffoldState.snackbarHostState.showSnackbar(
-                    message = "This is your message", actionLabel = "Do something"
-                )
-            }
-        }) {
-            Text(text = "Click me!")
-        }
-    }
 }

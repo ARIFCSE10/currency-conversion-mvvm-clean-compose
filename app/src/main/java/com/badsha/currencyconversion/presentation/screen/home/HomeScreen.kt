@@ -23,14 +23,13 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state = viewModel.state.value
-
     Scaffold(topBar = { TopBar() }) { padding ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colors.background)
         ) {
+            //Page States
             if (state.isLoading) { // Loading Case
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -79,17 +78,18 @@ fun HomeScreen(
                         Text(text = "Convert", style = MaterialTheme.typography.button)
                     }
                 }
+            }
 
-                if (viewModel.dialogState.value.isVisible) {
-                    ConversionSuccessDialog(onDismiss = {
-                        viewModel.hideSuccessDialog()
-                        viewModel.resetInput()
-                    }, title = { Text(text = viewModel.dialogState.value.title) }, content = {
-                        Text(
-                            text = viewModel.dialogState.value.message
-                        )
-                    })
-                }
+            // Dialogs
+            if (viewModel.dialogState.value.isVisible) {
+                ConversionSuccessDialog(onDismiss = {
+                    viewModel.hideSuccessDialog()
+                    viewModel.resetInput()
+                }, title = { Text(text = viewModel.dialogState.value.title) }, content = {
+                    Text(
+                        text = viewModel.dialogState.value.message
+                    )
+                })
             }
         }
     }
